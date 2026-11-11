@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Dagsläget</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dagsläget">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141518" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="noindex,nofollow">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" href="data:image/png;base64,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">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#fbfaf8; --fg:#1b1d22; --muted:#6a6f78; --line:#e3e1dc; --brand:#b4232c; --chip:#efece6;
+  --chat-bg:#f2f4f7; --mine:#2f5bd3; --theirs:#ffffff; --theirs-fg:#1b1d22; --rec:#d6343c;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141518; --fg:#ececea; --muted:#9a9ea6; --line:#2a2c31; --brand:#e0525a; --chip:#23252a;
+  --chat-bg:#0f1114; --mine:#4a74ea; --theirs:#23262c; --theirs-fg:#ececea; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--mine);outline-offset:2px}
+
+#news{max-width:720px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left))}
+.mast{position:sticky;top:0;padding-top:calc(env(safe-area-inset-top) + 10px);background:var(--bg);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:3px solid var(--fg)}
+.logo{font-family:var(--serif);font-weight:700;font-size:26px;letter-spacing:-.01em}
+.logo span{color:var(--brand)}
+.wx{background:var(--chip);border:0;border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted);user-select:none;-webkit-user-select:none;white-space:nowrap;font-variant-numeric:tabular-nums}
+.nav{display:flex;gap:16px;overflow-x:auto;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav b{color:var(--brand)}
+.date{font-size:12px;color:var(--muted);padding:10px 0}
+.lead h1{font-family:var(--serif);font-size:clamp(26px,6vw,36px);line-height:1.15;margin:4px 0 8px;text-wrap:balance}
+.ph{aspect-ratio:16/9;max-width:100%;border-radius:4px;background:linear-gradient(135deg,#5d6f86,#a3b2c2 55%,#d9cdb8);margin-bottom:12px}
+.kicker{color:var(--brand);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+.lead p{color:var(--muted);margin:0}
+.list{margin-top:20px}
+.item{display:grid;grid-template-columns:1fr 92px;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.item>div{min-width:0}
+.item h2{font-family:var(--serif);font-size:18px;line-height:1.25;margin:2px 0 0;text-wrap:balance}
+.t{width:92px;height:68px;border-radius:3px}
+.meta{font-size:12px;color:var(--muted);margin-top:4px}
+.lnk{color:inherit;text-decoration:none;display:block}
+.item.lnk{display:grid}
+.lead .meta{margin-top:6px}
+.foot{margin-top:28px;padding:18px 0 calc(env(safe-area-inset-bottom) + 18px);border-top:3px solid var(--fg);display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;color:var(--muted)}
+#copy{background:none;border:0;padding:0;color:var(--muted);font-size:12px;user-select:none;-webkit-user-select:none}
+
+#chat{position:fixed;inset:0;background:var(--chat-bg);display:flex;flex-direction:column;z-index:20}
+.cbar{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 10px) max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));border-bottom:1px solid var(--line);background:var(--bg)}
+.who{flex:1;min-width:0;font-weight:600}
+.subbtn{display:block;background:none;border:0;padding:0;font-weight:400;color:var(--muted);font-size:12px;text-align:left}
+.subbtn u{text-underline-offset:2px}
+.ghost{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:14px}
+#msgs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px max(12px,env(safe-area-inset-right)) 14px max(12px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:6px}
+.m{max-width:78%;align-self:flex-start;background:var(--theirs);color:var(--theirs-fg);padding:8px 12px;border-radius:16px 16px 16px 4px;overflow-wrap:anywhere}
+.m.me{align-self:flex-end;background:var(--mine);color:#fff;border-radius:16px 16px 4px 16px}
+.m .n{font-size:11px;opacity:.7;margin-bottom:2px}
+.m img{display:block;max-width:100%;border-radius:10px;max-height:320px;margin-top:2px}
+.m audio{display:block;width:240px;max-width:100%;margin-top:4px}
+.m .tm{font-size:10px;opacity:.65;text-align:right;margin-top:2px;font-variant-numeric:tabular-nums}
+.once{font-size:12px;opacity:.75;margin-top:4px}
+.once.done{font-style:italic;margin:0}
+.oncebtn{display:flex;align-items:center;gap:8px;background:none;border:1px dashed currentColor;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:2px}
+.oncebtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#viewer{position:fixed;inset:0;z-index:40;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px)}
+#viewer img{max-width:100%;max-height:calc(100% - 40px);object-fit:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.vhint{color:#bbb;font-size:13px}
+.note{align-self:center;font-size:12px;color:var(--muted);text-align:center;max-width:320px}
+#status{font-size:12px;color:var(--muted);text-align:center;padding:0 16px;min-height:0}
+#status:not(:empty){padding:4px 16px}
+.comp{display:flex;gap:8px;align-items:flex-end;padding:10px max(12px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 10px) max(12px,env(safe-area-inset-left));background:var(--bg);border-top:1px solid var(--line)}
+.ib{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--chat-bg);display:grid;place-items:center;padding:0}
+.ib svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ib.rec{background:var(--rec);border-color:var(--rec);color:#fff}
+#txt{flex:1;min-width:0;resize:none;max-height:120px;border:1px solid var(--line);border-radius:20px;padding:8px 14px;font:inherit;font-size:16px;background:var(--chat-bg);color:var(--fg)}
+#send{background:var(--mine);color:#fff;border:0}
+.setup{margin:auto;width:100%;max-width:340px;display:grid;gap:10px;padding:20px;text-align:center}
+.setup input{font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.setup .ok{background:var(--mine);color:#fff;border:0;border-radius:10px;padding:11px}
+.setup small{color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.m{animation:pop .15s ease-out}@keyframes pop{from{transform:translateY(4px);opacity:.4}}}
+</style>
+</head>
+<body>
+<div id="news">
+  <header class="mast">
+    <div class="logo">Dags<span>läget</span></div>
+    <button class="wx" id="wx" aria-label="Väder">Stockholm</button>
+  </header>
+  <nav class="nav"><b>Nyheter</b><span>Sverige</span><span>Världen</span><span>Ekonomi</span><span>Sport</span><span>Kultur</span><span>Väder</span></nav>
+  <div class="date" id="date"></div>
+  <article class="lead">
+    <div class="ph" role="img" aria-label="Riksdagshuset en mulen dag"></div>
+    <div class="kicker">Sverige</div>
+    <h1>Budgetförhandlingarna går in i slutskedet i riksdagen</h1>
+    <p>Partierna väntas lägga sina sista förslag innan omröstningarna. Flera frågor om skatter och välfärd är fortfarande öppna.</p>
+  </article>
+  <section class="list">
+    <div class="item"><div><div class="kicker">Ekonomi</div><h2>Hushållen blir mer försiktiga – så påverkas julhandeln</h2><div class="meta">I dag</div></div><div class="t" style="background:linear-gradient(135deg,#3f5a4c,#9fb39a)"></div></div>
+    <div class="item"><div><div class="kicker">Sverige</div><h2>Fler kommuner satsar på cykelvägar året runt</h2><div class="meta">I dag</div></div><div class="t" style="background:linear-gradient(135deg,#7a5b3a,#d4b48c)"></div></div>
+    <div class="item"><div><div class="kicker">Sport</div><h2>Tufft schema väntar landslaget under vintern</h2><div class="meta">I dag</div></div><div class="t" style="background:linear-gradient(135deg,#2c3e66,#8ea4cf)"></div></div>
+    <div class="item"><div><div class="kicker">Världen</div><h2>EU-ministrar möts om energipriserna inför vintern</h2><div class="meta">I dag</div></div><div class="t" style="background:linear-gradient(135deg,#5a4a6b,#b7a6c9)"></div></div>
+    <div class="item"><div><div class="kicker">Kultur</div><h2>Stadsbiblioteket förlänger öppettiderna på kvällarna</h2><div class="meta">I dag</div></div><div class="t" style="background:linear-gradient(135deg,#8a2d2d,#e0a07a)"></div></div>
+    <div class="item"><div><div class="kicker">Väder</div><h2 id="wxh">Så blir vädret i Stockholm de närmaste dagarna</h2><div class="meta">I dag</div></div><div class="t" style="background:linear-gradient(135deg,#4d6b80,#c8d8e2)"></div></div>
+  </section>
+  <footer class="foot"><span>Om oss</span><span>Kontakt</span><span>Integritet</span><button id="copy">© Dagsläget 2026</button></footer>
+</div>
+
+<div id="chat" hidden>
+  <div class="cbar">
+    <div class="who">Chatt<button id="sub" class="subbtn"></button></div>
+    <button class="ghost" id="hide">Stäng</button>
+  </div>
+  <div id="setup" class="setup" hidden>
+    <strong>Gå med i chatten</strong>
+    <input id="nickIn" maxlength="24" placeholder="Ditt smeknamn" autocomplete="off" autocapitalize="off">
+    <input id="codeIn" type="password" placeholder="Hemlig kod" autocomplete="off" autocapitalize="off">
+    <small>Ni måste skriva exakt samma kod. Välj något långt som bara ni två vet, gärna fyra ord.</small>
+    <button class="ok" id="nickOk">Fortsätt</button>
+  </div>
+  <div id="msgs" hidden></div>
+  <div id="status"></div>
+  <div class="comp" id="comp" hidden>
+    <button class="ib" id="imgBtn" aria-label="Skicka bild"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/></svg></button>
+    <button class="ib" id="micBtn" aria-label="Spela in röstmeddelande"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    <textarea id="txt" rows="1" placeholder="Meddelande"></textarea>
+    <button class="ib" id="send" aria-label="Skicka"><svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2-7z"/></svg></button>
+  </div>
+  <input type="file" id="imgIn" accept="image/*" multiple hidden>
+</div>
+<div id="viewer" hidden><img id="viewImg" alt="Bild"><div class="vhint">Bilden visas bara en gång. Tryck för att stänga.</div></div>
+
+<script>
+(function(){
+  const SB_URL="https://dzmwvgflmiuotsquwjlq.supabase.co".replace(/\/+$/,"");
+  const SB_KEY="sb_publishable_a7BFCoThPg8mm798WYwADQ_IUf1g3Rp";
+  const $=id=>document.getElementById(id);
+  const H={apikey:SB_KEY};
+  if(SB_KEY.startsWith("eyJ")) H.Authorization="Bearer "+SB_KEY;
+
+  function ls(k,v){try{ if(v===undefined) return localStorage.getItem(k); if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v);}catch(e){return null}}
+  const uuid=()=>crypto.randomUUID?crypto.randomUUID():([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
+  let sender=ls("dl_sender"); if(!sender){ sender=uuid(); ls("dl_sender",sender); }
+  let nick=ls("dl_nick")||"", room=ls("dl_room")||"";
+
+  // ---------- news decoy ----------
+  $("date").textContent=new Date().toLocaleDateString("sv-SE",{weekday:"long",day:"numeric",month:"long"});
+  const WMO={0:"klart",1:"mest klart",2:"halvklart",3:"mulet",45:"dimma",48:"dimma",51:"duggregn",53:"duggregn",55:"duggregn",56:"underkylt regn",57:"underkylt regn",61:"regn",63:"regn",65:"kraftigt regn",66:"underkylt regn",67:"underkylt regn",71:"snöfall",73:"snöfall",75:"kraftigt snöfall",77:"snö",80:"regnskurar",81:"regnskurar",82:"kraftiga skurar",85:"snöbyar",86:"snöbyar",95:"åska",96:"åska",99:"åska"};
+  fetch("https://api.open-meteo.com/v1/forecast?latitude=59.33&longitude=18.07&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Europe%2FStockholm&forecast_days=3")
+    .then(r=>r.json()).then(d=>{
+      const t=Math.round(d.current.temperature_2m), c=WMO[d.current.weather_code]||"";
+      $("wx").textContent="Stockholm "+t+"°"+(c?" · "+c:"");
+      const lo=Math.round(Math.min(...d.daily.temperature_2m_min)), hi=Math.round(Math.max(...d.daily.temperature_2m_max));
+      $("wxh").textContent=(c?c[0].toUpperCase()+c.slice(1)+" i Stockholm":"Vädret i Stockholm")+" – mellan "+lo+" och "+hi+" grader de närmaste dagarna";
+    }).catch(()=>{ $("wx").textContent="Stockholm"; });
+
+  // ---------- live news ----------
+  const SECT=[["/sport","Sport"],["/inrikes","Sverige"],["/utrikes","Världen"],["/ekonomi","Ekonomi"],["/kultur","Kultur"],["/noje","Nöje"],["/vetenskap","Vetenskap"],["/lokalt","Lokalt"],["/vader","Väder"],["/debatt","Debatt"],["/ledare","Ledare"],["/nyheter/sverige","Sverige"],["/nyheter/varlden","Världen"]];
+  const GRAD=["#3f5a4c,#9fb39a","#7a5b3a,#d4b48c","#2c3e66,#8ea4cf","#5a4a6b,#b7a6c9","#8a2d2d,#e0a07a","#4d6b80,#c8d8e2","#5d6f86,#d9cdb8"];
+  const clean=s=>{ if(!s) return ""; const d=new DOMParser().parseFromString("<p>"+s+"</p>","text/html"); let t=d.body.textContent||""; if(/[<&]/.test(t)){ t=new DOMParser().parseFromString(t,"text/html").body.textContent||""; } return t.replace(/\s+/g," ").trim(); };
+  const section=l=>{ try{ const p=new URL(l).pathname; for(const [k,v] of SECT) if(p.includes(k)) return v; }catch(e){} return "Nyheter"; };
+  const ago=p=>{ const t=Date.parse(p); if(!t) return "I dag"; const m=Math.max(1,Math.round((Date.now()-t)/60000)); if(m<60) return m+" min sedan"; const h=Math.round(m/60); if(h<24) return h+" tim sedan"; return "I går"; };
+  function pic(el,url,i){
+    el.style.background="linear-gradient(135deg,"+GRAD[i%GRAD.length]+")";
+    if(url&&/^https:/.test(url)){ const im=new Image(); im.referrerPolicy="no-referrer"; im.onload=()=>{ el.style.background="center/cover no-repeat url('"+url.replace(/'/g,"%27")+"')"; }; im.src=url; }
+  }
+  async function loadNews(){
+    let items;
+    try{ items=await rpc("get_news",{}); }catch(e){ return; }
+    if(!Array.isArray(items)) return;
+    items=items.map(x=>({t:clean(x.t),d:clean(x.d),l:x.l,p:x.p,img:x.img})).filter(x=>x.t&&x.l);
+    if(items.length<4) return;
+    const [lead,...rest]=items;
+    const art=document.querySelector(".lead"); art.textContent="";
+    const a=document.createElement("a"); a.className="lnk"; a.href=lead.l; a.target="_blank"; a.rel="noopener noreferrer";
+    const ph=document.createElement("div"); ph.className="ph"; pic(ph,lead.img,6);
+    const k=document.createElement("div"); k.className="kicker"; k.textContent=section(lead.l);
+    const h=document.createElement("h1"); h.textContent=lead.t;
+    const p=document.createElement("p"); p.textContent=lead.d.length>220?lead.d.slice(0,217)+"…":lead.d;
+    const mt=document.createElement("div"); mt.className="meta"; mt.textContent=ago(lead.p);
+    a.append(ph,k,h,p,mt); art.append(a);
+    const list=document.querySelector(".list"); list.textContent="";
+    rest.slice(0,8).forEach((it,i)=>{
+      const row=document.createElement("a"); row.className="item lnk"; row.href=it.l; row.target="_blank"; row.rel="noopener noreferrer";
+      const d=document.createElement("div");
+      const k=document.createElement("div"); k.className="kicker"; k.textContent=section(it.l);
+      const h=document.createElement("h2"); h.textContent=it.t;
+      const m=document.createElement("div"); m.className="meta"; m.textContent=ago(it.p);
+      d.append(k,h,m);
+      const t=document.createElement("div"); t.className="t"; pic(t,it.img,i);
+      row.append(d,t); list.append(row);
+    });
+  }
+  loadNews();
+  setInterval(()=>{ if(!document.hidden && !$("news").hidden) loadNews(); },10*60*1000);
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) loadNews(); });
+
+  // ---------- secret open: 3 taps on weather ----------
+  function triple(el,fn){ let t=[]; el.addEventListener("click",()=>{ const n=Date.now(); t=t.filter(x=>n-x<1500); t.push(n); if(t.length>=3){ t=[]; fn(); } }); }
+  triple($("wx"),openChat);
+
+  let poll=null;
+  function showNews(){ stopRec(true); closeViewer(); $("chat").hidden=true; $("news").hidden=false; if(poll){clearInterval(poll);poll=null;} }
+  $("hide").onclick=showNews;
+  document.addEventListener("visibilitychange",()=>{ if(document.hidden) showNews(); });
+  window.addEventListener("pagehide",showNews);
+
+  function openChat(){
+    $("news").hidden=true; $("chat").hidden=false;
+    if(!nick||!room){ showSetup(); return; }
+    startChat();
+  }
+  function showSetup(){
+    $("msgs").hidden=true; $("comp").hidden=true; $("setup").hidden=false;
+    $("nickIn").value=nick; $("codeIn").value="";
+    $("codeIn").placeholder= room ? "Hemlig kod (lämna tomt för samma)" : "Hemlig kod";
+    $("nickIn").focus();
+  }
+  async function hashCode(code){
+    const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("dagslaget:"+code.trim().toLowerCase().replace(/\s+/g," ")));
+    return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+  }
+  $("nickOk").onclick=async()=>{
+    const n=$("nickIn").value.trim(), c=$("codeIn").value;
+    if(!n){ $("nickIn").focus(); return; }
+    if(!c.trim() && !room){ $("codeIn").focus(); return; }
+    nick=n; ls("dl_nick",n);
+    if(c.trim()){ const r=await hashCode(c); if(r!==room){ room=r; ls("dl_room",r); lastSig=""; } }
+    $("setup").hidden=true; startChat();
+  };
+  $("sub").onclick=showSetup;
+  ["nickIn","codeIn"].forEach(id=>$(id).addEventListener("keydown",e=>{ if(e.key==="Enter") $("nickOk").click(); }));
+
+  function setSub(){ const s=$("sub"); s.textContent="Du heter "+nick+" · "; const u=document.createElement("u"); u.textContent="Byt namn eller kod"; s.append(u); }
+
+  // ---------- backend ----------
+  async function rpc(fn,args){
+    const r=await fetch(SB_URL+"/rest/v1/rpc/"+fn,{method:"POST",headers:Object.assign({"Content-Type":"application/json"},H),body:JSON.stringify(args)});
+    if(!r.ok) throw new Error(fn+" "+r.status+" "+(await r.text()).slice(0,200));
+    const t=await r.text(); return t?JSON.parse(t):null;
+  }
+  async function upload(blob,ext,type){
+    const path=uuid()+"."+ext;
+    const r=await fetch(SB_URL+"/storage/v1/object/media/"+path,{method:"POST",headers:Object.assign({"Content-Type":type,"x-upsert":"false","cache-control":"3600"},H),body:blob});
+    if(!r.ok) throw new Error("upload "+r.status+" "+(await r.text()).slice(0,200));
+    return path;
+  }
+  const mediaUrl=p=>SB_URL+"/storage/v1/object/public/media/"+p;
+  async function send(kind,body,path){
+    await rpc("send_msg",{r:room,s:sender,n:nick,k:kind,b:body||null,p:path||null});
+    refresh();
+  }
+
+  // ---------- chat ----------
+  let lastSig="", failCount=0;
+  function startChat(){
+    $("setup").hidden=true; $("msgs").hidden=false; $("comp").hidden=false; setSub();
+    if(lastCache) render(lastCache);
+    refresh();
+    if(!poll) poll=setInterval(refresh,2500);
+  }
+  let lastCache=null, busy=false;
+  async function refresh(){
+    if(busy||!room||$("chat").hidden) return; busy=true;
+    try{
+      const list=await rpc("get_msgs",{r:room});
+      failCount=0; if($("status").dataset.err) { $("status").textContent=""; delete $("status").dataset.err; }
+      const sig=list.map(m=>m.id+(m.opened?"o":"")+m.nick).join("|");
+      if(sig!==lastSig){ lastSig=sig; lastCache=list; render(list); }
+    }catch(e){
+      if(++failCount>=2){ $("status").textContent="Ingen anslutning just nu. Försöker igen…"; $("status").dataset.err="1"; }
+    }finally{ busy=false; }
+  }
+  function render(list){
+    const box=$("msgs"); const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
+    box.textContent="";
+    if(!list.length){ const n=document.createElement("div"); n.className="note"; n.textContent="Inga meddelanden än. Skriv det första."; box.append(n); }
+    const latest={}; for(const m of list) latest[m.sender]=m.nick;
+    for(const m of list){
+      const me=m.sender===sender;
+      const el=document.createElement("div"); el.className="m"+(me?" me":"");
+      if(!me){ const n=document.createElement("div"); n.className="n"; n.textContent=latest[m.sender]||m.nick; el.append(n); }
+      if(m.kind==="img"){
+        if(m.opened||!m.path){ const s=document.createElement("div"); s.className="once done"; s.textContent= me ? "Bild · öppnad" : "Bild · visad"; el.append(s); }
+        else if(me){ const i=document.createElement("img"); i.src=mediaUrl(m.path); i.alt="Bild"; i.onload=()=>{ if(atBottom) box.scrollTop=box.scrollHeight; }; el.append(i); const s=document.createElement("div"); s.className="once"; s.textContent="Inte öppnad än"; el.append(s); }
+        else { const bt=document.createElement("button"); bt.className="oncebtn"; bt.innerHTML='<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/></svg>'; bt.append("Tryck för att visa bild"); bt.onclick=()=>viewOnce(m); el.append(bt); }
+      }
+      if(m.kind==="aud"&&m.path){ const a=document.createElement("audio"); a.controls=true; a.preload="metadata"; a.src=mediaUrl(m.path); el.append(a); }
+      if(m.body){ const p=document.createElement("div"); p.textContent=m.body; el.append(p); }
+      const tm=document.createElement("div"); tm.className="tm"; tm.textContent=new Date(m.ts).toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"}); el.append(tm);
+      box.append(el);
+    }
+    if(atBottom||list.length<30) box.scrollTop=box.scrollHeight;
+  }
+
+  // ---------- view-once images ----------
+  function viewOnce(m){
+    const v=$("viewer"), img=$("viewImg");
+    img.src=mediaUrl(m.path); v.hidden=false;
+    rpc("open_msg",{r:room,s:sender,i:m.id}).then(()=>{ lastSig=""; }).catch(()=>{});
+  }
+  function closeViewer(){ const v=$("viewer"); if(v.hidden) return; v.hidden=true; $("viewImg").removeAttribute("src"); lastSig=""; refresh(); }
+  $("viewer").onclick=closeViewer;
+
+  const txt=$("txt");
+  txt.addEventListener("input",()=>{ txt.style.height="auto"; txt.style.height=Math.min(txt.scrollHeight,120)+"px"; });
+  $("send").onclick=async()=>{
+    const v=txt.value.trim(); if(!v) return;
+    txt.value=""; txt.style.height="auto";
+    try{ await send("text",v); }catch(e){ txt.value=v; $("status").textContent="Meddelandet skickades inte. Försök igen."; }
+  };
+
+  // ---------- images ----------
+  $("imgBtn").onclick=()=>$("imgIn").click();
+  $("imgIn").onchange=async e=>{
+    const files=[...e.target.files]; e.target.value="";
+    for(const f of files){
+      $("status").textContent="Skickar bild…";
+      try{ const b=await shrink(f); const p=await upload(b,"jpg","image/jpeg"); await send("img",null,p); $("status").textContent=""; }
+      catch(err){ $("status").textContent="Bilden kunde inte skickas. Försök igen."; }
+    }
+  };
+  function shrink(file){
+    return new Promise((res,rej)=>{
+      const url=URL.createObjectURL(file), im=new Image();
+      im.onload=()=>{ const max=1600, s=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight));
+        const cv=document.createElement("canvas"); cv.width=Math.round(im.naturalWidth*s); cv.height=Math.round(im.naturalHeight*s);
+        cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height); URL.revokeObjectURL(url);
+        cv.toBlob(b=>b?res(b):rej(0),"image/jpeg",.85); };
+      im.onerror=()=>{ URL.revokeObjectURL(url); rej(0); };
+      im.src=url;
+    });
+  }
+
+  // ---------- voice: tap to record, tap again to send ----------
+  let rec=null, chunks=[], recStart=0, recTimer=null, stream=null, discard=false;
+  $("micBtn").onclick=async()=>{
+    if(rec){ stopRec(false); return; }
+    if(!navigator.mediaDevices||!window.MediaRecorder){ $("status").textContent="Röstmeddelanden stöds inte i den här webbläsaren."; return; }
+    try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+    catch(e){ $("status").textContent="Ge appen tillgång till mikrofonen i Inställningar för att spela in."; return; }
+    const type=["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>MediaRecorder.isTypeSupported(t))||"";
+    rec=new MediaRecorder(stream,type?{mimeType:type}:undefined); chunks=[]; discard=false;
+    rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+    rec.onstop=async()=>{
+      stream&&stream.getTracks().forEach(t=>t.stop()); stream=null;
+      const mt=(rec&&rec.mimeType||type||"audio/mp4").split(";")[0]; rec=null;
+      $("micBtn").classList.remove("rec"); clearInterval(recTimer);
+      if(discard||!chunks.length||Date.now()-recStart<600){ $("status").textContent=""; return; }
+      const blob=new Blob(chunks,{type:mt});
+      $("status").textContent="Skickar röstmeddelande…";
+      try{ const p=await upload(blob,mt.includes("webm")?"webm":"m4a",mt); await send("aud",null,p); $("status").textContent=""; }
+      catch(e){ $("status").textContent="Röstmeddelandet kunde inte skickas. Försök igen."; }
+    };
+    rec.start(); recStart=Date.now(); $("micBtn").classList.add("rec");
+    const tick=()=>{ const s=Math.floor((Date.now()-recStart)/1000); $("status").textContent="Spelar in "+Math.floor(s/60)+":"+String(s%60).padStart(2,"0")+" – tryck på mikrofonen igen för att skicka"; if(s>=120) stopRec(false); };
+    tick(); recTimer=setInterval(tick,500);
+  };
+  function stopRec(throwAway){ if(!rec) return; discard=throwAway; try{ rec.stop(); }catch(e){} }
+
+  // ---------- secret wipe: 3 taps on footer ----------
+  triple($("copy"),async()=>{
+    if(!room) return;
+    const lbl=$("copy"), orig=lbl.textContent; lbl.textContent="Uppdaterar…";
+    try{ await rpc("wipe",{r:room}); lastSig=""; lastCache=[]; lbl.textContent="Uppdaterad nyss"; }
+    catch(e){ lbl.textContent="Kunde inte uppdatera"; }
+    setTimeout(()=>{ lbl.textContent=orig; },2500);
+  });
+})();
+</script>
+</body>
+</html>
