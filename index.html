@@ -79,6 +79,10 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 #viewer img{max-width:100%;max-height:calc(100% - 40px);object-fit:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .vhint{color:#bbb;font-size:13px}
 .note{align-self:center;font-size:12px;color:var(--muted);text-align:center;max-width:320px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2fb36b;margin:0 6px 1px 0;vertical-align:middle}
+.dot.off{background:var(--muted);opacity:.5}
+.pstate{font-weight:400;color:var(--muted);font-size:13px}
+.rc{align-self:flex-end;font-size:11px;color:var(--muted);margin:-2px 4px 2px 0}
 #typing{font-size:12px;color:var(--muted);padding:2px max(16px,env(safe-area-inset-left)) 4px;font-style:italic}
 #status{font-size:12px;color:var(--muted);text-align:center;padding:0 16px;min-height:0}
 #status:not(:empty){padding:4px 16px}
@@ -125,7 +129,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 
 <div id="chat" hidden>
   <div class="cbar">
-    <div class="who">Chatt<button id="sub" class="subbtn"></button></div>
+    <div class="who"><span id="peer">Chatt</span><button id="sub" class="subbtn"></button></div>
     <button class="ghost" id="hide">Stäng</button>
   </div>
   <div id="setup" class="setup" hidden>
@@ -296,14 +300,35 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
   async function refresh(){
     if(busy||!room||$("chat").hidden) return; busy=true;
     try{
-      const [list,typ]=await Promise.all([rpc("get_msgs",{r:room}), rpc("get_typing",{r:room,s:sender}).catch(()=>null)]);
-      const tEl=$("typing"); if(typ){ tEl.textContent=typ+" skriver…"; tEl.hidden=false; } else tEl.hidden=true;
+      const [list,pg]=await Promise.all([rpc("get_msgs",{r:room}), rpc("ping",{r:room,s:sender,n:nick,lr:lastSeenId}).catch(()=>null)]);
+      const tEl=$("typing"); const typ=pg&&pg.typing; if(typ){ tEl.textContent=typ+" skriver…"; tEl.hidden=false; } else tEl.hidden=true;
+      showPeers(pg&&pg.others);
       failCount=0; if($("status").dataset.err) { $("status").textContent=""; delete $("status").dataset.err; }
       const sig=list.map(m=>m.id+(m.opened?"o":"")+(m.opened_at?"a":"")+m.nick).join("|");
+      if(list.length) lastSeenId=Math.max(lastSeenId,list[list.length-1].id);
+      peersRead=0; if(pg&&pg.others) for(const o of pg.others) peersRead=Math.max(peersRead,o.lr||0);
       if(sig!==lastSig){ lastSig=sig; lastCache=list; render(list); }
+      updateReceipt();
     }catch(e){
       if(++failCount>=2){ $("status").textContent="Ingen anslutning just nu. Försöker igen…"; $("status").dataset.err="1"; }
     }finally{ busy=false; }
+  }
+  let lastSeenId=0, peersRead=0;
+  function updateReceipt(){ const r=$("rcpt"); if(!r) return; r.textContent = peersRead>=+r.dataset.id ? "Läst" : "Skickat"; }
+  function showPeers(others){
+    const el=$("peer"); el.textContent="";
+    if(!others||!others.length){ el.textContent="Chatt"; return; }
+    others.sort((a,b)=>a.ago-b.ago).slice(0,3).forEach((o,i)=>{
+      if(i) el.append(document.createTextNode("  "));
+      const on=o.ago<12;
+      const d=document.createElement("span"); d.className="dot"+(on?"":" off");
+      const n=document.createElement("span"); n.textContent=o.n+" ";
+      const st=document.createElement("span"); st.className="pstate";
+      if(on) st.textContent="online";
+      else { const t=new Date(Date.now()-o.ago*1000); const today=new Date().toDateString()===t.toDateString();
+        st.textContent="senast online "+(today?"":t.toLocaleDateString("sv-SE",{day:"numeric",month:"short"})+" ")+t.toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"}); }
+      el.append(d,n,st);
+    });
   }
   function render(list){
     const box=$("msgs"); const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
@@ -325,6 +350,9 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
       const tm=document.createElement("div"); tm.className="tm"; tm.textContent=new Date(m.ts).toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"}); el.append(tm);
       box.append(el);
     }
+    let mine=null; for(let i=list.length-1;i>=0;i--){ if(list[i].sender===sender){ mine=list[i]; break; } }
+    if(mine && box.lastElementChild){ const els=box.querySelectorAll(".m.me"); const last=els[els.length-1];
+      if(last){ const rc=document.createElement("div"); rc.id="rcpt"; rc.className="rc"; rc.dataset.id=mine.id; last.after(rc); updateReceipt(); } }
     if(atBottom||list.length<30) box.scrollTop=box.scrollHeight;
   }
 
