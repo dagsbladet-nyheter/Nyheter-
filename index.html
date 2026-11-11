@@ -209,7 +209,17 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
   document.addEventListener("visibilitychange",()=>{ if(!document.hidden) loadNews(); });
 
   // ---------- secret open: 3 taps on weather ----------
-  function triple(el,fn){ let t=[]; el.addEventListener("click",()=>{ const n=Date.now(); t=t.filter(x=>n-x<1500); t.push(n); if(t.length>=3){ t=[]; fn(); } }); }
+  function triple(el,fn){
+    let t=[];
+    const tap=()=>{ const n=Date.now(); t=t.filter(x=>n-x<1500); t.push(n); if(t.length>=3){ t=[]; fn(); } };
+    // touchend + preventDefault: no double-tap zoom on iPhone, and no extra click event
+    el.addEventListener("touchend",e=>{ e.preventDefault(); tap(); },{passive:false});
+    el.addEventListener("click",tap);
+  }
+  // block double-tap zoom anywhere on the page
+  let lastTouch=0;
+  document.addEventListener("touchend",e=>{ const n=Date.now(); if(n-lastTouch<350 && !e.target.closest("input,textarea,audio")) e.preventDefault(); lastTouch=n; },{passive:false});
+  document.addEventListener("gesturestart",e=>e.preventDefault());
   triple($("wx"),openChat);
 
   let poll=null;
