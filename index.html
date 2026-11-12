@@ -77,7 +77,10 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .oncebtn{display:flex;align-items:center;gap:8px;background:none;border:1px dashed currentColor;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:2px}
 .oncebtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #viewer{position:fixed;inset:0;z-index:40;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px)}
-#viewer img{max-width:100%;max-height:calc(100% - 40px);object-fit:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#viewCv{flex:1;width:100%;min-height:0;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;display:block}
+#viewer{justify-content:flex-start}
+.vbar{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
+#viewClose{background:none;border:1px solid #444;color:#ddd;border-radius:8px;padding:6px 12px;font-size:14px}
 .vhint{color:#bbb;font-size:13px}
 .note{align-self:center;font-size:12px;color:var(--muted);text-align:center;max-width:320px}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2fb36b;margin:0 6px 1px 0;vertical-align:middle}
@@ -159,7 +162,7 @@ body.kb .comp{padding-bottom:8px}
   </div>
   <input type="file" id="imgIn" accept="image/*" multiple hidden>
 </div>
-<div id="viewer" hidden><img id="viewImg" alt="Bild"><div class="vhint" id="viewCd">Tryck för att stänga</div></div>
+<div id="viewer" hidden><div class="vbar"><div class="vhint" id="viewCd"></div><button id="viewClose">Stäng</button></div><canvas id="viewCv" aria-label="Håll fingret och dra för att se bilden"></canvas></div>
 
 <script>
 (function(){
@@ -410,9 +413,64 @@ body.kb .comp{padding-bottom:8px}
   // ---------- view-once images ----------
   const VIEW_MS=5*60*1000;
   let viewExp=0;
+  // protected viewer: image only drawn on canvas, only around the finger, with a watermark
+  let vImg=null, vPt=null, vRaf=0;
+  async function loadProtected(path){
+    vImg=null;
+    try{
+      const r=await fetch(mediaUrl(path)); const blob=await r.blob();
+      const url=URL.createObjectURL(blob);
+      const im=new Image(); im.decoding="async";
+      await new Promise((ok,no)=>{ im.onload=ok; im.onerror=no; im.src=url; });
+      URL.revokeObjectURL(url); vImg=im;
+    }catch(e){ vImg=null; }
+    drawViewer();
+  }
+  function sizeCanvas(){
+    const c=$("viewCv"), dpr=window.devicePixelRatio||1, w=c.clientWidth, h=c.clientHeight;
+    if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){ c.width=Math.round(w*dpr); c.height=Math.round(h*dpr); }
+    return {c,dpr,w,h};
+  }
+  function drawViewer(){
+    vRaf=0; if($("viewer").hidden) return;
+    const {c,dpr,w,h}=sizeCanvas(); const g=c.getContext("2d");
+    g.setTransform(dpr,0,0,dpr,0,0); g.fillStyle="#000"; g.fillRect(0,0,w,h);
+    g.fillStyle="#888"; g.font="15px system-ui,-apple-system,sans-serif"; g.textAlign="center";
+    if(!vImg){ g.fillText("Laddar…",w/2,h/2); return; }
+    const sc=Math.min(w/vImg.naturalWidth,h/vImg.naturalHeight), iw=vImg.naturalWidth*sc, ih=vImg.naturalHeight*sc, ix=(w-iw)/2, iy=(h-ih)/2;
+    if(!vPt){ g.fillText("Håll fingret på skärmen och dra",w/2,h/2-10); g.fillText("för att se bilden",w/2,h/2+12); return; }
+    const R=Math.max(40,Math.min(iw,ih)*0.17);
+    vPt={x:vPt.x, y:vPt.y}; const fy=vPt.y; vPt.y=Math.max(R, fy-R-28); // lift the spotlight above the finger
+    queueMicrotask(()=>{ if(vPt) vPt.y=fy; });
+    g.save(); g.beginPath(); g.arc(vPt.x,vPt.y,R,0,Math.PI*2); g.clip();
+    g.drawImage(vImg,ix,iy,iw,ih);
+    // watermark over the revealed area
+    g.save(); g.translate(vPt.x,vPt.y); g.rotate(-Math.PI/6);
+    g.fillStyle="rgba(255,255,255,.28)"; g.font="600 14px system-ui,-apple-system,sans-serif";
+    const wm=(nick||"")+" · "+new Date().toLocaleString("sv-SE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+    for(let yy=-R;yy<=R;yy+=28){ for(let xx=-R*1.6;xx<=R*1.6;xx+=g.measureText(wm).width+24){ g.fillText(wm,xx,yy); } }
+    g.restore();
+    const grd=g.createRadialGradient(vPt.x,vPt.y,R*0.7,vPt.x,vPt.y,R);
+    grd.addColorStop(0,"rgba(0,0,0,0)"); grd.addColorStop(1,"rgba(0,0,0,1)");
+    g.fillStyle=grd; g.fillRect(vPt.x-R,vPt.y-R,R*2,R*2);
+    g.restore();
+  }
+  function vSchedule(){ if(!vRaf) vRaf=requestAnimationFrame(drawViewer); }
+  (function(){
+    const c=$("viewCv");
+    const pos=(e)=>{ const r=c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return t?{x:t.clientX-r.left,y:t.clientY-r.top}:null; };
+    c.addEventListener("touchstart",e=>{ e.preventDefault(); vPt=pos(e); vSchedule(); },{passive:false});
+    c.addEventListener("touchmove",e=>{ e.preventDefault(); vPt=pos(e); vSchedule(); },{passive:false});
+    ["touchend","touchcancel"].forEach(ev=>c.addEventListener(ev,e=>{ e.preventDefault(); vPt=null; vSchedule(); },{passive:false}));
+    c.addEventListener("mousedown",e=>{ vPt=pos(e); vSchedule(); });
+    c.addEventListener("mousemove",e=>{ if(e.buttons){ vPt=pos(e); vSchedule(); } });
+    window.addEventListener("mouseup",()=>{ if(vPt){ vPt=null; vSchedule(); } });
+    c.addEventListener("contextmenu",e=>e.preventDefault());
+    window.addEventListener("resize",vSchedule);
+  })();
   function viewOnce(m){
-    const v=$("viewer"), img=$("viewImg");
-    img.src=mediaUrl(m.path); v.hidden=false;
+    const v=$("viewer");
+    v.hidden=false; vPt=null; vSchedule(); loadProtected(m.path);
     viewExp = m.opened_at ? Date.parse(m.opened_at)+VIEW_MS : Date.now()+VIEW_MS;
     $("viewCd").dataset.exp=viewExp;
     if(!m.opened_at) rpc("open_msg",{r:room,s:sender,i:m.id}).then(()=>{ lastSig=""; refresh(); }).catch(()=>{});
@@ -422,12 +480,15 @@ body.kb .comp{padding-bottom:8px}
   function tickCd(){
     const now=Date.now(); let expired=false;
     document.querySelectorAll("#msgs .cd").forEach(el=>{ const e=+el.dataset.exp; if(e<=now) expired=true; el.textContent=(el.dataset.pre||"")+fmt(e-now); });
-    if(!$("viewer").hidden){ $("viewCd").textContent="Raderas om "+fmt(viewExp-now)+" · tryck för att stänga"; if(viewExp<=now) closeViewer(); }
+    if(!$("viewer").hidden){ $("viewCd").textContent="Raderas om "+fmt(viewExp-now); if(viewExp<=now) closeViewer(); }
     if(expired){ lastSig=""; refresh(); }
   }
   setInterval(tickCd,1000);
-  function closeViewer(){ const v=$("viewer"); if(v.hidden) return; v.hidden=true; $("viewImg").removeAttribute("src"); lastSig=""; refresh(); }
-  $("viewer").onclick=closeViewer;
+  function closeViewer(){ const v=$("viewer"); if(v.hidden) return; v.hidden=true; vImg=null; vPt=null;
+    const c=$("viewCv"); c.getContext("2d").clearRect(0,0,c.width,c.height); c.width=1; c.height=1; lastSig=""; refresh(); }
+  $("viewClose").onclick=closeViewer;
+  // also hide the image the moment the app loses focus
+  window.addEventListener("blur",()=>{ if(vPt){ vPt=null; vSchedule(); } });
 
   const txt=$("txt"); let txtWasFocused=false;
   txt.addEventListener("focus",()=>{ document.body.classList.add("kb"); });
