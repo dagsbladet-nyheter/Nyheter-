@@ -439,7 +439,7 @@ body.kb .comp{padding-bottom:8px}
     if(!vImg){ g.fillText("Laddar…",w/2,h/2); return; }
     const sc=Math.min(w/vImg.naturalWidth,h/vImg.naturalHeight), iw=vImg.naturalWidth*sc, ih=vImg.naturalHeight*sc, ix=(w-iw)/2, iy=(h-ih)/2;
     if(!vPt){ g.fillText("Håll fingret på skärmen och dra",w/2,h/2-10); g.fillText("för att se bilden",w/2,h/2+12); return; }
-    const R=Math.max(40,Math.min(iw,ih)*0.17);
+    const R=Math.max(70,Math.min(iw,ih)*0.30);
     vPt={x:vPt.x, y:vPt.y}; const fy=vPt.y; vPt.y=Math.max(R, fy-R-28); // lift the spotlight above the finger
     queueMicrotask(()=>{ if(vPt) vPt.y=fy; });
     g.save(); g.beginPath(); g.arc(vPt.x,vPt.y,R,0,Math.PI*2); g.clip();
@@ -450,7 +450,7 @@ body.kb .comp{padding-bottom:8px}
     const wm=(nick||"")+" · "+new Date().toLocaleString("sv-SE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
     for(let yy=-R;yy<=R;yy+=28){ for(let xx=-R*1.6;xx<=R*1.6;xx+=g.measureText(wm).width+24){ g.fillText(wm,xx,yy); } }
     g.restore();
-    const grd=g.createRadialGradient(vPt.x,vPt.y,R*0.7,vPt.x,vPt.y,R);
+    const grd=g.createRadialGradient(vPt.x,vPt.y,R*0.82,vPt.x,vPt.y,R);
     grd.addColorStop(0,"rgba(0,0,0,0)"); grd.addColorStop(1,"rgba(0,0,0,1)");
     g.fillStyle=grd; g.fillRect(vPt.x-R,vPt.y-R,R*2,R*2);
     g.restore();
