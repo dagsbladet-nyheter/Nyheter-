@@ -501,12 +501,9 @@ body.kb .comp{padding-bottom:8px}
     g.fillStyle="#888"; g.font="15px system-ui,-apple-system,sans-serif"; g.textAlign="center";
     if(!vImg){ g.fillText("Laddar…",w/2,h/2); return; }
     const sc=Math.min(w/vImg.naturalWidth,h/vImg.naturalHeight), iw=vImg.naturalWidth*sc, ih=vImg.naturalHeight*sc, ix=(w-iw)/2, iy=(h-ih)/2;
-    const mid=iy+ih/2;
-    if(!vPt){ g.fillText("Håll fingret upptill eller nedtill",w/2,h/2-10); g.fillText("för att se den delen av bilden",w/2,h/2+12); return; }
-    // split view: only the half under the finger is drawn, so a screenshot never holds the whole picture
-    const top=vPt.y<mid;
-    g.save(); g.beginPath(); g.rect(ix, top?iy:mid, iw, ih/2); g.clip(); g.drawImage(vImg,ix,iy,iw,ih); g.restore();
-    g.fillStyle="#666"; g.fillText(top?"Dra ner för nedre halvan":"Dra upp för övre halvan", w/2, top?mid+ih/4:mid-ih/4);
+    if(!vPt){ g.fillText("Håll fingret på skärmen",w/2,h/2-10); g.fillText("för att se bilden",w/2,h/2+12); return; }
+    // whole image, only while the finger is down
+    g.drawImage(vImg,ix,iy,iw,ih);
   }
   let vPhase=0;
   function vSchedule(){ if(!vRaf) vRaf=requestAnimationFrame(drawViewer); }
