@@ -444,10 +444,10 @@ body.kb .comp{padding-bottom:8px}
         q.append(qn,qt); q.onclick=()=>{ const t=box.querySelector('.m[data-id="'+m.reply_to+'"]'); if(t){ t.scrollIntoView({block:"center",behavior:"smooth"}); t.classList.add("flash"); setTimeout(()=>t.classList.remove("flash"),900); } };
         el.append(q); }
       if(m.kind==="img"){
-        const exp = m.opened_at ? Date.parse(m.opened_at)+VIEW_MS : 0;
+        const exp = m.opened_at ? Date.parse(m.opened_at)+IMG_MS : 0;
         if(m.opened||!m.path||(exp&&exp<=Date.now())){ const s=document.createElement("div"); s.className="once done"; s.textContent= me ? "Bild · öppnad och raderad" : "Bild · raderad"; el.append(s); }
         else if(me){ const i=document.createElement("img"); i.src=mediaUrl(m.path); i.alt="Bild"; i.onload=()=>{ if(atBottom) box.scrollTop=box.scrollHeight; }; el.append(i); const s=document.createElement("div"); s.className="once"; if(exp){ s.classList.add("cd"); s.dataset.exp=exp; s.dataset.pre="Öppnad · raderas om "; } else s.textContent="Inte öppnad än"; el.append(s); }
-        else { const bt=document.createElement("button"); bt.className="oncebtn"; bt.innerHTML='<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/></svg>'; const lab=document.createElement("span"); if(exp){ lab.className="cd"; lab.dataset.exp=exp; lab.dataset.pre="Visa bild · raderas om "; } else lab.textContent="Tryck för att visa bild (5 min)"; bt.append(lab); bt.onclick=()=>viewOnce(m); el.append(bt); }
+        else { const bt=document.createElement("button"); bt.className="oncebtn"; bt.innerHTML='<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/></svg>'; const lab=document.createElement("span"); if(exp){ lab.className="cd"; lab.dataset.exp=exp; lab.dataset.pre="Visa bild · raderas om "; } else lab.textContent="Tryck för att visa bild (30 min)"; bt.append(lab); bt.onclick=()=>viewOnce(m); el.append(bt); }
       }
       if(m.kind==="aud"){
         const exp = m.opened_at ? Date.parse(m.opened_at)+VIEW_MS : 0;
@@ -474,6 +474,7 @@ body.kb .comp{padding-bottom:8px}
 
   // ---------- view-once images ----------
   const VIEW_MS=5*60*1000;
+  const IMG_MS=30*60*1000;
   let viewExp=0;
   // protected viewer: image only drawn on canvas, shown only while the finger is down, 
   let vImg=null, vPt=null, vRaf=0;
@@ -524,7 +525,7 @@ body.kb .comp{padding-bottom:8px}
   function viewOnce(m){
     const v=$("viewer");
     v.hidden=false; vPt=null; vSchedule(); loadProtected(m.path);
-    viewExp = m.opened_at ? Date.parse(m.opened_at)+VIEW_MS : Date.now()+VIEW_MS;
+    viewExp = m.opened_at ? Date.parse(m.opened_at)+IMG_MS : Date.now()+IMG_MS;
     $("viewCd").dataset.exp=viewExp;
     if(!m.opened_at) rpc("open_msg",{r:room,s:sender,i:m.id}).then(()=>{ lastSig=""; refresh(); }).catch(()=>{});
     tickCd();
