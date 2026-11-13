@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Dagsläget</title>
+<!-- v2026-11-13-1025 -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Dagsläget">
@@ -270,12 +271,7 @@ body.kb .comp{padding-bottom:8px}
   document.addEventListener("visibilitychange",()=>{ if(document.hidden) showNews(); });
   window.addEventListener("pagehide",showNews);
   let pickerOpen=0;  // file picker / permission dialogs also blur the window
-  window.addEventListener("blur",()=>{ if(Date.now()<pickerOpen) return; if(!$("chat").hidden) showNews(); });
   document.addEventListener("freeze",showNews);
-  // hide the chat the moment a swipe starts at the very bottom edge (home gesture / app switcher)
-  const edgeHide=e=>{ if($("chat").hidden) return; const t=e.touches?e.touches[0]:e; if(t && t.clientY>window.innerHeight-24) showNews(); };
-  document.addEventListener("touchstart",edgeHide,{capture:true,passive:true});
-  document.addEventListener("touchmove",edgeHide,{capture:true,passive:true});
 
   function openChat(){
     $("news").hidden=true; $("chat").hidden=false;
