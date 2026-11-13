@@ -68,6 +68,23 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 #msgs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px max(12px,env(safe-area-inset-right)) 14px max(12px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:6px}
 .m{max-width:78%;align-self:flex-start;background:var(--theirs);color:var(--theirs-fg);padding:8px 12px;border-radius:16px 16px 16px 4px;overflow-wrap:anywhere}
 .m.me{align-self:flex-end;background:var(--mine);color:#fff;border-radius:16px 16px 4px 16px}
+.m{position:relative;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:transform .15s}
+.m.liked{margin-bottom:10px}
+.m.held{transform:scale(.96)}
+.m.flash{box-shadow:0 0 0 2px var(--mine)}
+.m .q{display:block;border-left:3px solid currentColor;opacity:.75;padding:2px 8px;margin:2px 0 6px;font-size:13px;border-radius:4px;background:rgba(127,127,127,.15);cursor:pointer}
+.m .q b{display:block;font-size:11px}
+.m .q span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.lk{position:absolute;bottom:-10px;right:8px;background:var(--bg);color:#ff4d6d;border:1px solid var(--line);border-radius:999px;font-size:11px;padding:0 6px;line-height:18px}
+.m.me .lk{right:auto;left:8px}
+.lk.mine{border-color:#ff4d6d}
+.pop{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.4);color:#ff4d6d;font-size:44px;pointer-events:none;animation:pop2 .7s ease-out forwards}
+@keyframes pop2{40%{transform:translate(-50%,-50%) scale(1.2);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+#replyBar{display:flex;align-items:center;gap:10px;padding:8px max(16px,env(safe-area-inset-right)) 8px max(16px,env(safe-area-inset-left));background:var(--bg);border-top:1px solid var(--line)}
+#replyBar .rq{flex:1;min-width:0;border-left:3px solid var(--mine);padding-left:8px;font-size:13px}
+#replyBar .rq b{display:block;font-size:12px;color:var(--mine)}
+#replyBar .rq span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+#rbX{background:none;border:0;color:var(--muted);font-size:18px;padding:4px 8px}
 .m .n{font-size:11px;opacity:.7;margin-bottom:2px}
 .m img{display:block;max-width:100%;border-radius:10px;max-height:320px;margin-top:2px}
 .m audio{display:block;width:240px;max-width:100%;margin-top:4px}
@@ -154,6 +171,7 @@ body.kb .comp{padding-bottom:8px}
     <audio id="prevAudio" controls preload="auto"></audio>
     <button class="ib" id="prevSend" aria-label="Skicka röstmeddelandet"><svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2-7z"/></svg></button>
   </div>
+  <div id="replyBar" hidden><div class="rq"><b id="rbNick"></b><span id="rbText"></span></div><button id="rbX" aria-label="Avbryt svar">✕</button></div>
   <div class="comp" id="comp" hidden>
     <button class="ib" id="imgBtn" aria-label="Skicka bild"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/></svg></button>
     <button class="ib" id="micBtn" aria-label="Spela in röstmeddelande"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
@@ -202,7 +220,9 @@ body.kb .comp{padding-bottom:8px}
     let items;
     try{ items=await rpc("get_news",{}); }catch(e){ return; }
     if(!Array.isArray(items)) return;
-    items=items.map(x=>({t:clean(x.t),d:clean(x.d),l:x.l,p:x.p,img:x.img})).filter(x=>x.t&&x.l);
+    const seen=new Set();
+    items=items.map(x=>({t:clean(x.t),d:clean(x.d),l:x.l,p:x.p,img:x.img})).filter(x=>x.t&&x.l&&!seen.has(x.t)&&seen.add(x.t))
+      .sort((a,b)=>(Date.parse(b.p)||0)-(Date.parse(a.p)||0));
     if(items.length<4) return;
     const [lead,...rest]=items;
     const art=document.querySelector(".lead"); art.textContent="";
@@ -230,9 +250,9 @@ body.kb .comp{padding-bottom:8px}
   document.addEventListener("visibilitychange",()=>{ if(!document.hidden) loadNews(); });
 
   // ---------- secret open: 3 taps on weather ----------
-  function triple(el,fn){
-    let t=[];
-    const tap=()=>{ const n=Date.now(); t=t.filter(x=>n-x<1500); t.push(n); if(t.length>=3){ t=[]; fn(); } };
+  function triple(el,fn,count){
+    let t=[]; const need=count||3;
+    const tap=()=>{ const n=Date.now(); t=t.filter(x=>n-x<1500); t.push(n); if(t.length>=need){ t=[]; fn(); } };
     // touchend + preventDefault: no double-tap zoom on iPhone, and no extra click event
     el.addEventListener("touchend",e=>{ e.preventDefault(); tap(); },{passive:false});
     el.addEventListener("click",tap);
@@ -241,13 +261,17 @@ body.kb .comp{padding-bottom:8px}
   let lastTouch=0;
   document.addEventListener("touchend",e=>{ const n=Date.now(); const free=e.target.closest("button,input,textarea,audio,a,label"); if(!free && n-lastTouch<350) e.preventDefault(); lastTouch=free?0:n; },{passive:false});
   document.addEventListener("gesturestart",e=>e.preventDefault());
-  triple($("wx"),openChat);
+  triple($("wx"),openChat,2);
 
   let poll=null;
-  function showNews(){ stopRec(true); closeViewer(); if(typeof clearPreview==="function") clearPreview(); $("chat").hidden=true; $("news").hidden=false; if(poll){clearInterval(poll);poll=null;} }
+  function showNews(){ if(typeof clearReply==="function"&&$("replyBar")) $("replyBar").hidden=true, replyTo=null; stopRec(true); closeViewer(); if(typeof clearPreview==="function") clearPreview(); $("chat").hidden=true; $("news").hidden=false; if(poll){clearInterval(poll);poll=null;} }
   $("hide").onclick=showNews;
+  $("rbX").onclick=()=>clearReply();
   document.addEventListener("visibilitychange",()=>{ if(document.hidden) showNews(); });
   window.addEventListener("pagehide",showNews);
+  let pickerOpen=0;  // file picker / permission dialogs also blur the window
+  window.addEventListener("blur",()=>{ if(Date.now()<pickerOpen) return; if(!$("chat").hidden) showNews(); });
+  document.addEventListener("freeze",showNews);
 
   function openChat(){
     $("news").hidden=true; $("chat").hidden=false;
@@ -307,7 +331,7 @@ body.kb .comp{padding-bottom:8px}
     }catch(e){}
   }
   $("pushBtn").onclick=async()=>{
-    try{ const p=await Notification.requestPermission(); if(p==="granted"){ if(!sender&&room&&nick) await ensureSender(); await savePush(); } }catch(e){}
+    try{ pickerOpen=Date.now()+60000; const p=await Notification.requestPermission(); pickerOpen=0; if(p==="granted"){ if(!sender&&room&&nick) await ensureSender(); await savePush(); } }catch(e){}
     updatePushUI();
   };
 
@@ -325,7 +349,8 @@ body.kb .comp{padding-bottom:8px}
   }
   const mediaUrl=p=>SB_URL+"/storage/v1/object/public/media/"+p;
   async function send(kind,body,path){
-    await rpc("send_msg",{r:room,s:sender,n:nick,k:kind,b:body||null,p:path||null});
+    const rt=replyTo; clearReply();
+    await rpc("send_msg",{r:room,s:sender,n:nick,k:kind,b:body||null,p:path||null,rt:rt||null});
     refresh();
   }
 
@@ -346,7 +371,7 @@ body.kb .comp{padding-bottom:8px}
       const tEl=$("typing"); const typ=pg&&pg.typing; if(typ){ tEl.textContent=typ+" skriver…"; tEl.hidden=false; } else tEl.hidden=true;
       showPeers(pg&&pg.others);
       failCount=0; if($("status").dataset.err) { $("status").textContent=""; delete $("status").dataset.err; }
-      const sig=list.map(m=>m.id+(m.opened?"o":"")+(m.opened_at?"a":"")+m.nick).join("|");
+      const sig=list.map(m=>m.id+(m.opened?"o":"")+(m.opened_at?"a":"")+m.nick+"/"+(m.likes||[]).join(",")).join("|");
       if(list.length) lastSeenId=Math.max(lastSeenId,list[list.length-1].id);
       peersRead=0; if(pg&&pg.others) for(const o of pg.others) peersRead=Math.max(peersRead,o.lr||0);
       if(sig!==lastSig){ lastSig=sig; lastCache=list; render(list); }
@@ -373,15 +398,52 @@ body.kb .comp{padding-bottom:8px}
       el.append(d,n,st);
     });
   }
+  let byId={}, replyTo=null;
+  function snippet(o){ if(o.kind==="img") return "Bild"; if(o.kind==="aud") return "Röstmeddelande"; const b=o.body||""; return b.length>70?b.slice(0,70)+"…":b; }
+  function setReply(m){
+    replyTo=m.id; $("rbNick").textContent= m.sender===sender ? "Svarar dig själv" : "Svarar "+(m.nick||"");
+    $("rbText").textContent=snippet(m); $("replyBar").hidden=false; txt.focus();
+  }
+  function clearReply(){ replyTo=null; $("replyBar").hidden=true; }
+  async function toggleLike(id){
+    const m=byId[id]; if(!m) return;
+    const l=(m.likes||[]).slice(); const i=l.indexOf(sender); if(i>=0) l.splice(i,1); else l.push(sender);
+    m.likes=l; lastSig=""; render(lastCache||[]);
+    const el=$("msgs").querySelector('.m[data-id="'+id+'"]'); if(el && i<0){ const p=document.createElement("span"); p.className="pop"; p.textContent="♥"; el.append(p); setTimeout(()=>p.remove(),700); }
+    try{ await rpc("like_msg",{r:room,s:sender,i:id}); }catch(e){} lastSig=""; refresh();
+  }
+  // double tap = like, long press = reply
+  (function(){
+    const box=$("msgs"); let lp=null, start=null, lastTap={id:0,t:0};
+    const bubble=e=>{ const el=e.target.closest(".m"); if(!el||e.target.closest("button,audio,a,.q")) return null; return el; };
+    box.addEventListener("touchstart",e=>{
+      const el=bubble(e); if(!el) return; const t=e.touches[0]; start={x:t.clientX,y:t.clientY,at:Date.now(),el};
+      clearTimeout(lp); lp=setTimeout(()=>{ const m=byId[+el.dataset.id]; if(m){ start=null; el.classList.add("held"); setTimeout(()=>el.classList.remove("held"),250); setReply(m); } },450);
+    },{passive:true});
+    box.addEventListener("touchmove",e=>{ if(!start) return; const t=e.touches[0]; if(Math.abs(t.clientX-start.x)>10||Math.abs(t.clientY-start.y)>10){ clearTimeout(lp); start=null; } },{passive:true});
+    box.addEventListener("touchend",e=>{
+      clearTimeout(lp); if(!start) return; const s=start; start=null; if(Date.now()-s.at>300) return;
+      const id=+s.el.dataset.id, n=Date.now();
+      if(lastTap.id===id && n-lastTap.t<320){ e.preventDefault(); lastTap={id:0,t:0}; toggleLike(id); } else lastTap={id,t:n};
+    },{passive:false});
+    box.addEventListener("dblclick",e=>{ const el=bubble(e); if(el) toggleLike(+el.dataset.id); });
+    box.addEventListener("contextmenu",e=>{ const el=bubble(e); if(el){ e.preventDefault(); const m=byId[+el.dataset.id]; if(m) setReply(m); } });
+  })();
   function render(list){
     const box=$("msgs"); const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
     box.textContent="";
     if(!list.length){ const n=document.createElement("div"); n.className="note"; n.textContent="Inga meddelanden än. Skriv det första."; box.append(n); }
     const latest={}; for(const m of list) latest[m.sender]=m.nick;
+    byId={}; for(const m of list) byId[m.id]=m;
     for(const m of list){
       const me=m.sender===sender;
-      const el=document.createElement("div"); el.className="m"+(me?" me":"");
+      const el=document.createElement("div"); el.className="m"+(me?" me":""); el.dataset.id=m.id;
       if(!me){ const n=document.createElement("div"); n.className="n"; n.textContent=latest[m.sender]||m.nick; el.append(n); }
+      if(m.reply_to){ const o=byId[m.reply_to]; const q=document.createElement("div"); q.className="q";
+        const qn=document.createElement("b"); qn.textContent=o?(o.sender===sender?"Du":(latest[o.sender]||o.nick)):"";
+        const qt=document.createElement("span"); qt.textContent=o?snippet(o):"Meddelandet finns inte längre";
+        q.append(qn,qt); q.onclick=()=>{ const t=box.querySelector('.m[data-id="'+m.reply_to+'"]'); if(t){ t.scrollIntoView({block:"center",behavior:"smooth"}); t.classList.add("flash"); setTimeout(()=>t.classList.remove("flash"),900); } };
+        el.append(q); }
       if(m.kind==="img"){
         const exp = m.opened_at ? Date.parse(m.opened_at)+VIEW_MS : 0;
         if(m.opened||!m.path||(exp&&exp<=Date.now())){ const s=document.createElement("div"); s.className="once done"; s.textContent= me ? "Bild · öppnad och raderad" : "Bild · raderad"; el.append(s); }
@@ -402,6 +464,7 @@ body.kb .comp{padding-bottom:8px}
       }
       if(m.body){ const p=document.createElement("div"); p.textContent=m.body; el.append(p); }
       const tm=document.createElement("div"); tm.className="tm"; tm.textContent=new Date(m.ts).toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"}); el.append(tm);
+      const lk=(m.likes||[]); if(lk.length){ const h=document.createElement("span"); h.className="lk"+(lk.includes(sender)?" mine":""); h.textContent="♥"+(lk.length>1?" "+lk.length:""); el.append(h); el.classList.add("liked"); }
       box.append(el);
     }
     let mine=null; for(let i=list.length-1;i>=0;i--){ if(list[i].sender===sender){ mine=list[i]; break; } }
@@ -508,7 +571,8 @@ body.kb .comp{padding-bottom:8px}
   };
 
   // ---------- images ----------
-  $("imgBtn").onclick=()=>$("imgIn").click();
+  $("imgBtn").onclick=()=>{ pickerOpen=Date.now()+120000; $("imgIn").click(); };
+  window.addEventListener("focus",()=>{ if(pickerOpen) setTimeout(()=>{ pickerOpen=0; },1500); });
   $("imgIn").onchange=async e=>{
     const files=[...e.target.files]; e.target.value="";
     for(const f of files){
@@ -534,7 +598,7 @@ body.kb .comp{padding-bottom:8px}
   $("micBtn").onclick=async()=>{
     if(rec){ stopRec(false); return; }
     if(!navigator.mediaDevices||!window.MediaRecorder){ $("status").textContent="Röstmeddelanden stöds inte i den här webbläsaren."; return; }
-    try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+    try{ pickerOpen=Date.now()+30000; stream=await navigator.mediaDevices.getUserMedia({audio:true}); pickerOpen=0; }
     catch(e){ $("status").textContent="Ge appen tillgång till mikrofonen i Inställningar för att spela in."; return; }
     const type=["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>MediaRecorder.isTypeSupported(t))||"";
     rec=new MediaRecorder(stream,type?{mimeType:type}:undefined); chunks=[]; discard=false;
