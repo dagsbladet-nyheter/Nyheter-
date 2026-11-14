@@ -429,7 +429,8 @@ body.kb .comp{padding-bottom:8px}
     box.addEventListener("contextmenu",e=>{ const el=bubble(e); if(el){ e.preventDefault(); const m=byId[+el.dataset.id]; if(m) setReply(m); } });
   })();
   function render(list){
-    const box=$("msgs"); const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
+    const box=$("msgs"); const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100; const prevTop=box.scrollTop;
+    const first=!box.dataset.rendered; box.dataset.rendered="1";
     box.textContent="";
     if(!list.length){ const n=document.createElement("div"); n.className="note"; n.textContent="Inga meddelanden än. Skriv det första."; box.append(n); }
     const latest={}; for(const m of list) latest[m.sender]=m.nick;
@@ -469,7 +470,8 @@ body.kb .comp{padding-bottom:8px}
     let mine=null; for(let i=list.length-1;i>=0;i--){ if(list[i].sender===sender){ mine=list[i]; break; } }
     if(mine && box.lastElementChild){ const els=box.querySelectorAll(".m.me"); const last=els[els.length-1];
       if(last){ const rc=document.createElement("div"); rc.id="rcpt"; rc.className="rc"; rc.dataset.id=mine.id; last.after(rc); updateReceipt(); } }
-    if(atBottom||list.length<30) box.scrollTop=box.scrollHeight;
+    // stay at the bottom if you were there, otherwise keep exactly the same place in the chat
+    if(atBottom||first) box.scrollTop=box.scrollHeight; else box.scrollTop=prevTop;
   }
 
   // ---------- view-once images ----------
