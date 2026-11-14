@@ -162,7 +162,7 @@ body.kb .comp{padding-bottom:8px}
     <button class="ok" id="nickOk">Fortsätt</button>
     <button class="ghost" id="pushBtn" hidden>Slå på nyhetsnotiser</button>
     <small id="pushNote"></small>
-    <small style="opacity:.6">Version 14 nov 09:20</small>
+    <small style="opacity:.6">Version 14 nov 21:30</small>
   </div>
   <div id="msgs" hidden></div>
   <div id="typing" hidden></div>
@@ -454,7 +454,8 @@ body.kb .comp{padding-bottom:8px}
         else { const bt=document.createElement("button"); bt.className="oncebtn"; bt.innerHTML='<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/></svg>'; const lab=document.createElement("span"); if(exp){ lab.className="cd"; lab.dataset.exp=exp; lab.dataset.pre="Visa bild · raderas om "; } else lab.textContent="Tryck för att visa bild (30 min)"; bt.append(lab); bt.onclick=()=>viewOnce(m); el.append(bt); }
       }
       if(m.kind==="aud"){
-        const exp = m.opened_at ? Date.parse(m.opened_at)+VIEW_MS : 0;
+        // voice messages stay until midnight on the day they were first listened to
+        const exp = m.opened_at ? (()=>{ const d=new Date(m.opened_at); d.setHours(24,0,0,0); return d.getTime(); })() : 0;
         if(m.opened||!m.path||(exp&&exp<=Date.now())){ const s=document.createElement("div"); s.className="once done"; s.textContent= me ? "Röstmeddelande · lyssnat och raderat" : "Röstmeddelande · raderat"; el.append(s); }
         else {
           // reuse the same player between renders so playback and loaded length survive updates
@@ -462,8 +463,8 @@ body.kb .comp{padding-bottom:8px}
           if(fresh){ a=document.createElement("audio"); a.controls=true; a.preload="metadata"; a.src=mediaUrl(m.path); audioCache[m.id]=a; }
           keepAudio.add(m.id); el.append(a);
           const s=document.createElement("div"); s.className="once";
-          if(exp){ s.classList.add("cd"); s.dataset.exp=exp; s.dataset.pre= me ? "Lyssnat · raderas om " : "Raderas om "; }
-          else { s.textContent= me ? "Inte lyssnat än" : "Raderas 5 min efter att du lyssnat";
+          if(exp){ s.textContent= me ? "Lyssnat · raderas vid midnatt" : "Raderas vid midnatt"; }
+          else { s.textContent= me ? "Inte lyssnat än" : "Raderas vid midnatt efter att du lyssnat";
             if(!me && fresh) a.addEventListener("play",()=>{ rpc("open_msg",{r:room,s:sender,i:m.id}).then(()=>{ lastSig=""; }).catch(()=>{}); },{once:true}); }
           el.append(s);
         }
