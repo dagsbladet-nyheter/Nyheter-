@@ -162,6 +162,7 @@ body.kb .comp{padding-bottom:8px}
     <button class="ok" id="nickOk">Fortsätt</button>
     <button class="ghost" id="pushBtn" hidden>Slå på nyhetsnotiser</button>
     <small id="pushNote"></small>
+    <small style="opacity:.6">Version 14 nov 09:20</small>
   </div>
   <div id="msgs" hidden></div>
   <div id="typing" hidden></div>
@@ -397,7 +398,7 @@ body.kb .comp{padding-bottom:8px}
       el.append(d,n,st);
     });
   }
-  let byId={}, replyTo=null;
+  let byId={}, replyTo=null; const audioCache={}, imgCache={};
   function snippet(o){ if(o.kind==="img") return "Bild"; if(o.kind==="aud") return "Röstmeddelande"; const b=o.body||""; return b.length>70?b.slice(0,70)+"…":b; }
   function setReply(m){
     replyTo=m.id; $("rbNick").textContent= m.sender===sender ? "Svarar dig själv" : "Svarar "+(m.nick||"");
@@ -430,11 +431,13 @@ body.kb .comp{padding-bottom:8px}
   })();
   function render(list){
     const box=$("msgs"); const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100; const prevTop=box.scrollTop;
+    let anchor=null; { const bt=box.getBoundingClientRect().top; for(const e of box.querySelectorAll(".m")){ const r=e.getBoundingClientRect(); if(r.bottom>bt+4){ anchor={id:e.dataset.id, d:r.top-bt}; break; } } }
     const first=!box.dataset.rendered; box.dataset.rendered="1";
     box.textContent="";
     if(!list.length){ const n=document.createElement("div"); n.className="note"; n.textContent="Inga meddelanden än. Skriv det första."; box.append(n); }
     const latest={}; for(const m of list) latest[m.sender]=m.nick;
     byId={}; for(const m of list) byId[m.id]=m;
+    const keepAudio=new Set(), keepImg=new Set();
     for(const m of list){
       const me=m.sender===sender;
       const el=document.createElement("div"); el.className="m"+(me?" me":""); el.dataset.id=m.id;
@@ -447,18 +450,21 @@ body.kb .comp{padding-bottom:8px}
       if(m.kind==="img"){
         const exp = m.opened_at ? Date.parse(m.opened_at)+IMG_MS : 0;
         if(m.opened||!m.path||(exp&&exp<=Date.now())){ const s=document.createElement("div"); s.className="once done"; s.textContent= me ? "Bild · öppnad och raderad" : "Bild · raderad"; el.append(s); }
-        else if(me){ const i=document.createElement("img"); i.src=mediaUrl(m.path); i.alt="Bild"; i.onload=()=>{ if(atBottom) box.scrollTop=box.scrollHeight; }; el.append(i); const s=document.createElement("div"); s.className="once"; if(exp){ s.classList.add("cd"); s.dataset.exp=exp; s.dataset.pre="Öppnad · raderas om "; } else s.textContent="Inte öppnad än"; el.append(s); }
+        else if(me){ let i=imgCache[m.id]; if(!i){ i=document.createElement("img"); i.src=mediaUrl(m.path); i.alt="Bild"; imgCache[m.id]=i; } keepImg.add(m.id); el.append(i); const s=document.createElement("div"); s.className="once"; if(exp){ s.classList.add("cd"); s.dataset.exp=exp; s.dataset.pre="Öppnad · raderas om "; } else s.textContent="Inte öppnad än"; el.append(s); }
         else { const bt=document.createElement("button"); bt.className="oncebtn"; bt.innerHTML='<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/></svg>'; const lab=document.createElement("span"); if(exp){ lab.className="cd"; lab.dataset.exp=exp; lab.dataset.pre="Visa bild · raderas om "; } else lab.textContent="Tryck för att visa bild (30 min)"; bt.append(lab); bt.onclick=()=>viewOnce(m); el.append(bt); }
       }
       if(m.kind==="aud"){
         const exp = m.opened_at ? Date.parse(m.opened_at)+VIEW_MS : 0;
         if(m.opened||!m.path||(exp&&exp<=Date.now())){ const s=document.createElement("div"); s.className="once done"; s.textContent= me ? "Röstmeddelande · lyssnat och raderat" : "Röstmeddelande · raderat"; el.append(s); }
         else {
-          const a=document.createElement("audio"); a.controls=true; a.preload="metadata"; a.src=mediaUrl(m.path); el.append(a);
+          // reuse the same player between renders so playback and loaded length survive updates
+          let a=audioCache[m.id]; const fresh=!a;
+          if(fresh){ a=document.createElement("audio"); a.controls=true; a.preload="metadata"; a.src=mediaUrl(m.path); audioCache[m.id]=a; }
+          keepAudio.add(m.id); el.append(a);
           const s=document.createElement("div"); s.className="once";
           if(exp){ s.classList.add("cd"); s.dataset.exp=exp; s.dataset.pre= me ? "Lyssnat · raderas om " : "Raderas om "; }
           else { s.textContent= me ? "Inte lyssnat än" : "Raderas 5 min efter att du lyssnat";
-            if(!me) a.addEventListener("play",()=>{ rpc("open_msg",{r:room,s:sender,i:m.id}).then(()=>{ lastSig=""; }).catch(()=>{}); },{once:true}); }
+            if(!me && fresh) a.addEventListener("play",()=>{ rpc("open_msg",{r:room,s:sender,i:m.id}).then(()=>{ lastSig=""; }).catch(()=>{}); },{once:true}); }
           el.append(s);
         }
       }
@@ -470,8 +476,12 @@ body.kb .comp{padding-bottom:8px}
     let mine=null; for(let i=list.length-1;i>=0;i--){ if(list[i].sender===sender){ mine=list[i]; break; } }
     if(mine && box.lastElementChild){ const els=box.querySelectorAll(".m.me"); const last=els[els.length-1];
       if(last){ const rc=document.createElement("div"); rc.id="rcpt"; rc.className="rc"; rc.dataset.id=mine.id; last.after(rc); updateReceipt(); } }
+    for(const id in imgCache){ if(!keepImg.has(+id)) delete imgCache[id]; }
+    for(const id in audioCache){ if(!keepAudio.has(+id)){ try{ audioCache[id].pause(); }catch(e){} delete audioCache[id]; } }
     // stay at the bottom if you were there, otherwise keep exactly the same place in the chat
-    if(atBottom||first) box.scrollTop=box.scrollHeight; else box.scrollTop=prevTop;
+    if(atBottom||first) box.scrollTop=box.scrollHeight;
+    else { box.scrollTop=prevTop; const t=anchor&&box.querySelector('.m[data-id="'+anchor.id+'"]');
+      if(t){ box.scrollTop+= (t.getBoundingClientRect().top-box.getBoundingClientRect().top)-anchor.d; } }
   }
 
   // ---------- view-once images ----------
