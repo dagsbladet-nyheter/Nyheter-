@@ -75,7 +75,15 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .m .q{display:block;border-left:3px solid currentColor;opacity:.75;padding:2px 8px;margin:2px 0 6px;font-size:13px;border-radius:4px;background:rgba(127,127,127,.15);cursor:pointer}
 .m .q b{display:block;font-size:11px}
 .m .q span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
-.lk{position:absolute;bottom:-10px;right:8px;background:var(--bg);color:#ff4d6d;border:1px solid var(--line);border-radius:999px;font-size:11px;padding:0 6px;line-height:18px}
+.lk{position:absolute;bottom:-11px;right:8px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:999px;font-size:12px;padding:0 6px;line-height:20px;white-space:nowrap}
+#menuBg{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.35)}
+#menu{position:fixed;z-index:31;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 8px 30px rgba(0,0,0,.35);display:grid;gap:2px;min-width:250px}
+#menu .emrow{display:flex;gap:2px;padding:2px 2px 6px;border-bottom:1px solid var(--line);margin-bottom:2px}
+#menu .emrow button{background:none;border:0;font-size:26px;line-height:1;padding:6px;border-radius:12px}
+#menu .emrow button.on{background:var(--chat-bg);outline:2px solid var(--mine)}
+#menu .mitem{background:none;border:0;text-align:left;font-size:16px;padding:10px 12px;border-radius:10px;color:var(--fg)}
+#menu .mitem:active{background:var(--chat-bg)}
+.m.sel{position:relative;z-index:32}
 .m.me .lk{right:auto;left:8px}
 .lk.mine{border-color:#ff4d6d}
 .pop{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.4);color:#ff4d6d;font-size:44px;pointer-events:none;animation:pop2 .7s ease-out forwards}
@@ -162,7 +170,7 @@ body.kb .comp{padding-bottom:8px}
     <button class="ok" id="nickOk">Fortsätt</button>
     <button class="ghost" id="pushBtn" hidden>Slå på nyhetsnotiser</button>
     <small id="pushNote"></small>
-    <small style="opacity:.6">Version 14 nov 21:30</small>
+    <small style="opacity:.6">Version 14 nov 22:00</small>
   </div>
   <div id="msgs" hidden></div>
   <div id="typing" hidden></div>
@@ -265,7 +273,7 @@ body.kb .comp{padding-bottom:8px}
   triple($("wx"),openChat,2);
 
   let poll=null;
-  function showNews(){ if(typeof clearReply==="function"&&$("replyBar")) $("replyBar").hidden=true, replyTo=null; stopRec(true); closeViewer(); if(typeof clearPreview==="function") clearPreview(); $("chat").hidden=true; $("news").hidden=false; if(poll){clearInterval(poll);poll=null;} }
+  function showNews(){ if(typeof closeMenu==="function") closeMenu(); if(typeof clearReply==="function"&&$("replyBar")) $("replyBar").hidden=true, replyTo=null; stopRec(true); closeViewer(); if(typeof clearPreview==="function") clearPreview(); $("chat").hidden=true; $("news").hidden=false; if(poll){clearInterval(poll);poll=null;} }
   $("hide").onclick=showNews;
   $("rbX").onclick=()=>clearReply();
   document.addEventListener("visibilitychange",()=>{ if(document.hidden) showNews(); });
@@ -371,7 +379,7 @@ body.kb .comp{padding-bottom:8px}
       const tEl=$("typing"); const typ=pg&&pg.typing; if(typ){ tEl.textContent=typ+" skriver…"; tEl.hidden=false; } else tEl.hidden=true;
       showPeers(pg&&pg.others);
       failCount=0; if($("status").dataset.err) { $("status").textContent=""; delete $("status").dataset.err; }
-      const sig=list.map(m=>m.id+(m.opened?"o":"")+(m.opened_at?"a":"")+m.nick+"/"+(m.likes||[]).join(",")).join("|");
+      const sig=list.map(m=>m.id+(m.opened?"o":"")+(m.opened_at?"a":"")+m.nick+"/"+JSON.stringify(m.reactions||{})).join("|");
       if(list.length) lastSeenId=Math.max(lastSeenId,list[list.length-1].id);
       peersRead=0; if(pg&&pg.others) for(const o of pg.others) peersRead=Math.max(peersRead,o.lr||0);
       if(sig!==lastSig){ lastSig=sig; lastCache=list; render(list); }
@@ -405,20 +413,42 @@ body.kb .comp{padding-bottom:8px}
     $("rbText").textContent=snippet(m); $("replyBar").hidden=false; txt.focus();
   }
   function clearReply(){ replyTo=null; $("replyBar").hidden=true; }
-  async function toggleLike(id){
+  const EMOJIS=["❤️","👍","😂","😮","😢","👎"];
+  async function react(id,emo){
     const m=byId[id]; if(!m) return;
-    const l=(m.likes||[]).slice(); const i=l.indexOf(sender); if(i>=0) l.splice(i,1); else l.push(sender);
-    m.likes=l; lastSig=""; render(lastCache||[]);
-    const el=$("msgs").querySelector('.m[data-id="'+id+'"]'); if(el && i<0){ const p=document.createElement("span"); p.className="pop"; p.textContent="♥"; el.append(p); setTimeout(()=>p.remove(),700); }
-    try{ await rpc("like_msg",{r:room,s:sender,i:id}); }catch(e){} lastSig=""; refresh();
+    const r=Object.assign({},m.reactions||{}); const removing=r[sender]===emo;
+    if(removing) delete r[sender]; else r[sender]=emo;
+    m.reactions=r; lastSig=""; render(lastCache||[]);
+    const el=$("msgs").querySelector('.m[data-id="'+id+'"]'); if(el && !removing){ const p=document.createElement("span"); p.className="pop"; p.textContent=emo; el.append(p); setTimeout(()=>p.remove(),700); }
+    try{ await rpc("react_msg",{r:room,s:sender,i:id,e:emo}); }catch(e){} lastSig=""; refresh();
   }
+  function toggleLike(id){ react(id,"❤️"); }
+  // long-press menu: reactions + reply
+  function openMenu(m,el){
+    closeMenu();
+    const bg=document.createElement("div"); bg.id="menuBg"; bg.onclick=closeMenu;
+    const mn=document.createElement("div"); mn.id="menu";
+    const row=document.createElement("div"); row.className="emrow";
+    const mine=(m.reactions||{})[sender];
+    for(const e of EMOJIS){ const b=document.createElement("button"); b.textContent=e; if(mine===e) b.className="on"; b.onclick=()=>{ closeMenu(); react(m.id,e); }; row.append(b); }
+    const rb=document.createElement("button"); rb.className="mitem"; rb.textContent="Svara"; rb.onclick=()=>{ closeMenu(); setReply(m); };
+    mn.append(row,rb);
+    if(m.kind==="text"&&m.body){ const cb=document.createElement("button"); cb.className="mitem"; cb.textContent="Kopiera"; cb.onclick=()=>{ closeMenu(); try{ navigator.clipboard.writeText(m.body); }catch(e){} }; mn.append(cb); }
+    document.body.append(bg,mn);
+    const r=el.getBoundingClientRect(), mh=mn.offsetHeight, mw=mn.offsetWidth;
+    let top=r.top-mh-8; if(top<70) top=Math.min(r.bottom+8, window.innerHeight-mh-12);
+    let left=m.sender===sender ? r.right-mw : r.left; left=Math.max(10,Math.min(left,window.innerWidth-mw-10));
+    mn.style.top=top+"px"; mn.style.left=left+"px";
+    el.classList.add("sel");
+  }
+  function closeMenu(){ const a=$("menu"), b=$("menuBg"); if(a) a.remove(); if(b) b.remove(); document.querySelectorAll(".m.sel").forEach(x=>x.classList.remove("sel")); }
   // double tap = like, long press = reply
   (function(){
     const box=$("msgs"); let lp=null, start=null, lastTap={id:0,t:0};
     const bubble=e=>{ const el=e.target.closest(".m"); if(!el||e.target.closest("button,audio,a,.q")) return null; return el; };
     box.addEventListener("touchstart",e=>{
       const el=bubble(e); if(!el) return; const t=e.touches[0]; start={x:t.clientX,y:t.clientY,at:Date.now(),el};
-      clearTimeout(lp); lp=setTimeout(()=>{ const m=byId[+el.dataset.id]; if(m){ start=null; el.classList.add("held"); setTimeout(()=>el.classList.remove("held"),250); setReply(m); } },450);
+      clearTimeout(lp); lp=setTimeout(()=>{ const m=byId[+el.dataset.id]; if(m){ start=null; el.classList.add("held"); setTimeout(()=>el.classList.remove("held"),250); openMenu(m,el); } },450);
     },{passive:true});
     box.addEventListener("touchmove",e=>{ if(!start) return; const t=e.touches[0]; if(Math.abs(t.clientX-start.x)>10||Math.abs(t.clientY-start.y)>10){ clearTimeout(lp); start=null; } },{passive:true});
     box.addEventListener("touchend",e=>{
@@ -427,7 +457,7 @@ body.kb .comp{padding-bottom:8px}
       if(lastTap.id===id && n-lastTap.t<320){ e.preventDefault(); lastTap={id:0,t:0}; toggleLike(id); } else lastTap={id,t:n};
     },{passive:false});
     box.addEventListener("dblclick",e=>{ const el=bubble(e); if(el) toggleLike(+el.dataset.id); });
-    box.addEventListener("contextmenu",e=>{ const el=bubble(e); if(el){ e.preventDefault(); const m=byId[+el.dataset.id]; if(m) setReply(m); } });
+    box.addEventListener("contextmenu",e=>{ const el=bubble(e); if(el){ e.preventDefault(); const m=byId[+el.dataset.id]; if(m) openMenu(m,el); } });
   })();
   function render(list){
     const box=$("msgs"); const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100; const prevTop=box.scrollTop;
@@ -471,7 +501,9 @@ body.kb .comp{padding-bottom:8px}
       }
       if(m.body){ const p=document.createElement("div"); p.textContent=m.body; el.append(p); }
       const tm=document.createElement("div"); tm.className="tm"; tm.textContent=new Date(m.ts).toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"}); el.append(tm);
-      const lk=(m.likes||[]); if(lk.length){ const h=document.createElement("span"); h.className="lk"+(lk.includes(sender)?" mine":""); h.textContent="♥"+(lk.length>1?" "+lk.length:""); el.append(h); el.classList.add("liked"); }
+      const rx=m.reactions||{}; const vals=Object.values(rx);
+      if(vals.length){ const h=document.createElement("span"); h.className="lk"+(rx[sender]?" mine":""); const uniq=[...new Set(vals)];
+        h.textContent=uniq.join("")+(vals.length>1?" "+vals.length:""); el.append(h); el.classList.add("liked"); }
       box.append(el);
     }
     let mine=null; for(let i=list.length-1;i>=0;i--){ if(list[i].sender===sender){ mine=list[i]; break; } }
